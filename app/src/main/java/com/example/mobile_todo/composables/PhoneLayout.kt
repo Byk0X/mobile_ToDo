@@ -19,6 +19,12 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -44,12 +50,12 @@ fun PhoneLayout(){
             title = {
                 Text(text = tabItems[pagerState.currentPage].label)
             },
-            colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+            colors = TopAppBarDefaults.topAppBarColors(
                 containerColor = MaterialTheme.colorScheme.primaryContainer
             )
         )
 
-        TabRow(
+        PrimaryTabRow(
             selectedTabIndex = pagerState.currentPage
         ) {
             tabItems.fastForEachIndexed { index, tab ->
@@ -62,11 +68,7 @@ fun PhoneLayout(){
                     },
                     text = {
                         when (tab) {
-                            is TabItem.TextTab -> Text(tab.label)
-                            is TabItem.IconTab -> Icon(
-                                imageVector = tab.icon,
-                                contentDescription = tab.label
-                            )
+                            else -> Text(tab.label)
                         }
 
                     }

@@ -1,187 +1,79 @@
 package com.example.mobile_todo.composables
 
-import android.app.DatePickerDialog
-import android.net.Uri
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.platform.LocalContext
-
 import com.example.mobile_todo.database.Attachment
 import com.example.mobile_todo.database.Task
-
-import java.sql.Date
-import java.util.Calendar
+import com.example.mobile_todo.database.TaskWithAttachemnts
+import java.util.Date
 
 @Composable
 fun AddTaskDialog(
     onDismiss: () -> Unit,
-    onSave: (Task, List<Attachment>) -> Unit
+    onSave: (Task, List<Attachment>) -> Unit,
+    existingTask: TaskWithAttachemnts? = null
 ) {
-
-    var title by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
-    val createdAt = remember { Date(System.currentTimeMillis()) }
-    var dueAt by remember { mutableStateOf<Date?>(null) }
-    var status by remember { mutableStateOf(false) }
-    var hasNotification by remember { mutableStateOf(false) }
-    var category by remember { mutableStateOf("Bez kategorii") }
-    val attachments = remember { mutableStateListOf<Uri>() }
-
-    // File Picker
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.OpenMultipleDocuments(),
-        onResult = { uris ->
-            if (uris.isNotEmpty()) {
-                attachments.addAll(uris)
-            }
-        }
-    )
-
-    // Date picker
-    val context = LocalContext.current
-    val calendar = Calendar.getInstance()
-
-    fun showDatePicker(onDateSelected: (Date) -> Unit) {
-        DatePickerDialog(
-            context,
-            { _, year, month, day ->
-                calendar.set(year, month, day)
-                onDateSelected(Date(calendar.timeInMillis))
-            },
-            calendar.get(Calendar.YEAR),
-            calendar.get(Calendar.MONTH),
-            calendar.get(Calendar.DAY_OF_MONTH)
-        ).show()
-    }
+    var title by remember { mutableStateOf(TextFieldValue(existingTask?.task?.title ?: "")) }
+    var description by remember { mutableStateOf(TextFieldValue(existingTask?.task?.description ?: "")) }
+    var attachments by remember { mutableStateOf(existingTask?.attachments ?: emptyList()) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Dodaj zadanie") },
+        title = {
+            Text(text = if (existingTask == null) "Dodaj zadanie" else "Edytuj zadanie")
+        },
         text = {
-            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-                TextField(value = title, onValueChange = { title = it }, label = { Text("Tytuł") })
-                Spacer(Modifier.height(8.dp))
-
-                TextField(
+            Column {
+                OutlinedTextField(
+                    value = title,
+                    onValueChange = { title = it },
+                    label = { Text("Tytuł") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedTextField(
                     value = description,
                     onValueChange = { description = it },
                     label = { Text("Opis") },
-                    modifier = Modifier.height(100.dp)
+                    modifier = Modifier.fillMaxWidth()
                 )
-                Spacer(Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
-                Button(onClick = {
-                    showDatePicker { selectedDate -> dueAt = selectedDate }
-                }) {
-                    Text(dueAt?.let { "Termin: $it" } ?: "Wybierz termin wykonania")
-                }
-
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Checkbox(checked = status, onCheckedChange = { status = it })
-                    Text("Zakończone")
-                }
-
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Checkbox(checked = hasNotification, onCheckedChange = { hasNotification = it })
-                    Text("Powiadomienie")
-                }
-
-                Spacer(Modifier.height(8.dp))
-
-                var categoryExpanded by remember { mutableStateOf(false) }
-                Box {
-                    Text(
-                        text = "Kategoria: $category",
-                        modifier = Modifier
-                            .clickable { categoryExpanded = true }
-                            .background(Color.LightGray)
-                            .padding(8.dp)
-                    )
-                    DropdownMenu(
-                        expanded = categoryExpanded,
-                        onDismissRequest = { categoryExpanded = false }
-                    ) {
-                        listOf("Bez kategorii", "Dom", "Praca", "Inne").forEach {
-                            DropdownMenuItem(
-                                text = { Text(it) },
-                                onClick = {
-                                    category = it
-                                    categoryExpanded = false
-                                }
-                            )
-                        }
-                    }
-                }
-
-                Spacer(Modifier.height(8.dp))
-                Divider()
-                Text("Załączniki (${attachments.size}):")
-
-                attachments.forEachIndexed { index, uri ->
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            uri.lastPathSegment ?: "Załącznik",
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.weight(1f)
-                        )
-                        IconButton(onClick = { attachments.removeAt(index) }) {
-                            Icon(Icons.Default.Delete, contentDescription = "Usuń załącznik")
-                        }
-                    }
-                }
-
-                Button(onClick = {
-                    launcher.launch(arrayOf("*/*"))
-                }) {
-                    Text("Dodaj załącznik")
-                }
+                // Tu możesz dodać UI do zarządzania załącznikami, np. dodaj plik, lista nazw plików itd.
+                Text("Załączników: ${attachments.size}")
             }
         },
         confirmButton = {
             Button(
-                enabled = title.isNotBlank(),
                 onClick = {
-                    val newTask = Task(
-                        title = title,
-                        description = description,
-                        createdAt = createdAt,
-                        dueAt = dueAt,
-                        status = status,
-                        hasNotification = hasNotification,
-                        category = category
-                    )
-
-                    val attachmentEntities = attachments.map { uri ->
-                        Attachment(taskId = 0L, uri = uri.toString())
+                    val task = if (existingTask != null) {
+                        existingTask.task.copy(
+                            title = title.text,
+                            description = description.text
+                        )
+                    } else {
+                        Task(
+                            title = title.text,
+                            description = description.text,
+                            createdAt = Date(System.currentTimeMillis()),
+                            dueAt = null,
+                            status = false,
+                            hasNotification = false,
+                            category = ""
+                        )
                     }
-
-                    onSave(newTask, attachmentEntities)
-                    onDismiss()
+                    onSave(task, attachments)
                 }
             ) {
                 Text("Zapisz")
             }
         },
         dismissButton = {
-            Button(onClick = onDismiss) {
+            TextButton(onClick = onDismiss) {
                 Text("Anuluj")
             }
         }

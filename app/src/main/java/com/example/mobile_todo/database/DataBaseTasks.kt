@@ -6,7 +6,7 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.Relation
-import java.sql.Date
+import java.util.Date
 
 @Entity(tableName = "tasks")
 data class Task(
@@ -14,13 +14,11 @@ data class Task(
     @PrimaryKey(autoGenerate = true) val id: Long =0,
     var title: String,
     val description: String,
-    val createdAt: Date,
-    val dueAt: Date,
+    val createdAt: Date?,
+    val dueAt: Date?,
     var status: Boolean,
     var hasNotification: Boolean,
     val category: String
-
-
 )
 
 @Entity(

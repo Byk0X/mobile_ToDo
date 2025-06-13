@@ -30,14 +30,16 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
+import androidx.lifecycle.ViewModel
+import com.example.mobile_todo.viewmodel.TaskViewModel
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun PhoneLayout(){
+fun PhoneLayout(viewModel: TaskViewModel){
 
     val tabItems = listOf(
-        TabItem.IconTab(Icons.Default.Home, "Podstawowe"),
+        TabItem.IconTab(Icons.Default.Home, "Lista"),
         TabItem.IconTab(Icons.Rounded.Settings, "Ustawienia")
 
     )
@@ -81,16 +83,9 @@ fun PhoneLayout(){
                 modifier = Modifier.fillMaxSize()
             ) { page ->
                 when (page) {
-                    0 -> LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        item {
-                            TaskList()
-                        }
-                    }
+                    0 ->  TaskList(viewModel)
+                    1 ->  Settings()
+
                 }
             }
         }

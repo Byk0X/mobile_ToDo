@@ -22,6 +22,8 @@ import androidx.compose.ui.unit.dp
 import com.example.mobile_todo.database.Attachment
 import com.example.mobile_todo.database.Task
 import com.example.mobile_todo.database.TaskWithAttachemnts
+import com.example.mobile_todo.utils.copyUriToInternalStorage
+import com.example.mobile_todo.utils.deleteAttachmentFile
 import java.sql.Date
 import java.util.*
 
@@ -40,10 +42,18 @@ fun EditTaskDialog(
     var status by remember { mutableStateOf(existingTask?.task?.status ?: false) }
     var hasNotification by remember { mutableStateOf(existingTask?.task?.hasNotification ?: false) }
     var category by remember { mutableStateOf(existingTask?.task?.category ?: "Bez kategorii") }
+
+    // attachments to lista nazw plików
     val attachments = remember {
-        mutableStateListOf<Uri>().apply {
-            existingTask?.attachments?.forEach { add(Uri.parse(it.uri)) }
+        mutableStateListOf<String>().apply {
+            existingTask?.attachments?.forEach { add(it.filename) }
         }
+    }
+
+    // Pomocnicza funkcja tworząca Uri z nazwy pliku w katalogu aplikacji
+    fun getAttachmentUri(filename: String): Uri {
+        val file = java.io.File(context.filesDir, filename)
+        return Uri.fromFile(file)
     }
 
     // File Picker
@@ -51,7 +61,13 @@ fun EditTaskDialog(
         contract = ActivityResultContracts.OpenMultipleDocuments(),
         onResult = { uris ->
             if (uris.isNotEmpty()) {
-                attachments.addAll(uris)
+                uris.forEach { uri ->
+                    // Kopiujemy plik do pamięci aplikacji, funkcja powinna zwracać nazwę pliku (String)
+                    val filename = copyUriToInternalStorage(context, uri)
+                    filename?.let {
+                        attachments.add(it)
+                    }
+                }
             }
         }
     )
@@ -137,18 +153,22 @@ fun EditTaskDialog(
 
                 Text("Załączniki (${attachments.size}):")
 
-                attachments.forEachIndexed { index, uri ->
+                attachments.forEachIndexed { index, filename ->
+                    val uri = getAttachmentUri(filename)
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
-                            uri.lastPathSegment ?: "Załącznik",
+                            filename,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier.weight(1f)
                         )
-                        IconButton(onClick = { attachments.removeAt(index) }) {
+                        IconButton(onClick = {
+                            deleteAttachmentFile(context, uri)
+                            attachments.removeAt(index)
+                        }) {
                             Icon(Icons.Default.Delete, contentDescription = "Usuń załącznik")
                         }
                     }
@@ -175,8 +195,9 @@ fun EditTaskDialog(
                         category = category
                     )
 
-                    val attachmentEntities = attachments.map { uri ->
-                        Attachment(taskId = updatedTask.id, uri = uri.toString())
+                    // Tutaj mapujesz listę nazw plików na Attachment
+                    val attachmentEntities = attachments.map { filename ->
+                        Attachment(taskId = updatedTask.id, filename = filename)
                     }
 
                     onSave(updatedTask, attachmentEntities)
@@ -193,3 +214,4 @@ fun EditTaskDialog(
         }
     )
 }
+

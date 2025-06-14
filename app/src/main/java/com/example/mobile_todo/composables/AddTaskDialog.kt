@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
 import com.example.mobile_todo.database.Attachment
 import com.example.mobile_todo.database.Task
+import com.example.mobile_todo.utils.copyUriToInternalStorage
 import java.sql.Date
 import java.util.Calendar
 
@@ -179,9 +180,13 @@ fun AddTaskDialog(
                         category = category
                     )
 
-                    val attachmentEntities = attachments.map { uri ->
-                        Attachment(taskId = 0L, uri = uri.toString())
+                    val attachmentEntities = attachments.mapNotNull { uri ->
+                        val localUri = copyUriToInternalStorage(context, uri)
+                        localUri?.let {
+                            Attachment(taskId = 0L, filename = it.toString())
+                        }
                     }
+
 
                     onSave(newTask, attachmentEntities)
                     onDismiss()

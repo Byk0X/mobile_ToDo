@@ -34,7 +34,7 @@ data class Task(
 data class Attachment(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val taskId: Long,
-    val uri: String // np. content:// lub file://
+    val filename: String
 )
 
 

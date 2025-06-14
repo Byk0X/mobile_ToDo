@@ -60,7 +60,7 @@ fun TaskList(viewModel: TaskViewModel) {
             Icon(Icons.Default.Add, contentDescription = "Dodaj zadanie")
         }
 
-        // Dialog do dodania nowego zadania
+
         if (showDialog) {
             AddTaskDialog(
                 onDismiss = { showDialog = false },
@@ -71,7 +71,7 @@ fun TaskList(viewModel: TaskViewModel) {
             )
         }
 
-        // Dialog ze szczegółami (z opcją usuń / edytuj)
+
         if (selectedTask != null) {
             TaskDetailDialog(
                 taskWithAttachments = selectedTask!!,
@@ -87,9 +87,8 @@ fun TaskList(viewModel: TaskViewModel) {
             )
         }
 
-        // Dialog do edycji istniejącego zadania
         if (taskToEdit != null) {
-            AddTaskDialog(
+            EditTaskDialog(
                 onDismiss = { taskToEdit = null },
                 onSave = { updatedTask: Task, updatedAttachments: List<Attachment> ->
                     viewModel.updateTaskWithAttachments(updatedTask, updatedAttachments)

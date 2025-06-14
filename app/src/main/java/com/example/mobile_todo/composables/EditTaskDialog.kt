@@ -1,6 +1,5 @@
 package com.example.mobile_todo.composables
 
-
 import android.app.DatePickerDialog
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -17,29 +16,35 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.platform.LocalContext
 import com.example.mobile_todo.database.Attachment
 import com.example.mobile_todo.database.Task
+import com.example.mobile_todo.database.TaskWithAttachemnts
 import java.sql.Date
-import java.util.Calendar
-
+import java.util.*
 
 @Composable
-fun AddTaskDialog(
+fun EditTaskDialog(
     onDismiss: () -> Unit,
-    onSave: (Task, List<Attachment>) -> Unit
+    onSave: (Task, List<Attachment>) -> Unit,
+    existingTask: TaskWithAttachemnts?
 ) {
-    var title by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
-    val createdAt = remember { Date(System.currentTimeMillis()) }
-    var dueAt by remember { mutableStateOf<Date?>(null) }
-    var status by remember { mutableStateOf(false) }
-    var hasNotification by remember { mutableStateOf(false) }
-    var category by remember { mutableStateOf("Bez kategorii") }
-    val attachments = remember { mutableStateListOf<Uri>() }
+    val context = LocalContext.current
 
+    var title by remember { mutableStateOf(existingTask?.task?.title ?: "") }
+    var description by remember { mutableStateOf(existingTask?.task?.description ?: "") }
+    val createdAt = existingTask?.task?.createdAt ?: Date(System.currentTimeMillis())
+    var dueAt by remember { mutableStateOf(existingTask?.task?.dueAt) }
+    var status by remember { mutableStateOf(existingTask?.task?.status ?: false) }
+    var hasNotification by remember { mutableStateOf(existingTask?.task?.hasNotification ?: false) }
+    var category by remember { mutableStateOf(existingTask?.task?.category ?: "Bez kategorii") }
+    val attachments = remember {
+        mutableStateListOf<Uri>().apply {
+            existingTask?.attachments?.forEach { add(Uri.parse(it.uri)) }
+        }
+    }
 
     // File Picker
     val launcher = rememberLauncherForActivityResult(
@@ -51,10 +56,10 @@ fun AddTaskDialog(
         }
     )
 
-
-    // Date picker
-    val context = LocalContext.current
+    // Date Picker
     val calendar = Calendar.getInstance()
+    dueAt?.let { calendar.time = it }
+
     fun showDatePicker(onDateSelected: (Date) -> Unit) {
         DatePickerDialog(
             context,
@@ -68,10 +73,9 @@ fun AddTaskDialog(
         ).show()
     }
 
-
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Dodaj zadanie") },
+        title = { Text("Edytuj zadanie") },
         text = {
             Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
                 TextField(value = title, onValueChange = { title = it }, label = { Text("Tytuł") })
@@ -93,7 +97,6 @@ fun AddTaskDialog(
                     Checkbox(checked = status, onCheckedChange = { status = it })
                     Text("Zakończone")
                 }
-
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(checked = hasNotification, onCheckedChange = { hasNotification = it })
@@ -125,9 +128,7 @@ fun AddTaskDialog(
                                 }
                             )
                         }
-
                     }
-
                 }
 
                 Spacer(Modifier.height(8.dp))
@@ -150,7 +151,6 @@ fun AddTaskDialog(
                         IconButton(onClick = { attachments.removeAt(index) }) {
                             Icon(Icons.Default.Delete, contentDescription = "Usuń załącznik")
                         }
-
                     }
                 }
 
@@ -158,18 +158,14 @@ fun AddTaskDialog(
                     launcher.launch(arrayOf("*/*"))
                 }) {
                     Text("Dodaj załącznik")
-
                 }
-
             }
-
         },
-
         confirmButton = {
             Button(
                 enabled = title.isNotBlank(),
                 onClick = {
-                    val newTask = Task(
+                    val updatedTask = existingTask!!.task.copy(
                         title = title,
                         description = description,
                         createdAt = createdAt,
@@ -180,16 +176,15 @@ fun AddTaskDialog(
                     )
 
                     val attachmentEntities = attachments.map { uri ->
-                        Attachment(taskId = 0L, uri = uri.toString())
+                        Attachment(taskId = updatedTask.id, uri = uri.toString())
                     }
 
-                    onSave(newTask, attachmentEntities)
+                    onSave(updatedTask, attachmentEntities)
                     onDismiss()
                 }
             ) {
                 Text("Zapisz")
             }
-
         },
         dismissButton = {
             Button(onClick = onDismiss) {

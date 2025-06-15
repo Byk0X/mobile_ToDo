@@ -23,34 +23,54 @@ fun TaskList(viewModel: TaskViewModel) {
     var showDialog by remember { mutableStateOf(false) }
     var selectedTask by remember { mutableStateOf<TaskWithAttachemnts?>(null) }
     var taskToEdit by remember { mutableStateOf<TaskWithAttachemnts?>(null) }
+    var searchQuery by remember { mutableStateOf("") }
 
     val tasks by viewModel.tasksWithAttachments.collectAsState()
     val context = LocalContext.current
 
+    // Filtrowanie listy na podstawie zapytania
+    val filteredTasks = tasks.filter {
+        it.task.title.contains(searchQuery, ignoreCase = true) ||
+                it.task.description.contains(searchQuery, ignoreCase = true)
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(bottom = 72.dp),
-            contentPadding = PaddingValues(8.dp)
-        ) {
-            items(tasks) { task ->
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp)
-                        .clickable { selectedTask = task },
-                    elevation = CardDefaults.cardElevation(4.dp)
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(text = task.task.title, style = MaterialTheme.typography.titleMedium)
-                        Spacer(Modifier.height(4.dp))
-                        Text(text = task.task.description, style = MaterialTheme.typography.bodyMedium)
+        Column(modifier = Modifier.fillMaxSize()) {
+            // Pasek wyszukiwania
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                label = { Text("Szukaj zadania...") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+            )
+
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(bottom = 72.dp),
+                contentPadding = PaddingValues(8.dp)
+            ) {
+                items(filteredTasks) { task ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
+                            .clickable { selectedTask = task },
+                        elevation = CardDefaults.cardElevation(4.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(text = task.task.title, style = MaterialTheme.typography.titleMedium)
+                            Spacer(Modifier.height(4.dp))
+                            Text(text = task.task.description, style = MaterialTheme.typography.bodyMedium)
+                        }
                     }
                 }
             }
         }
 
+        // Floating Action Button
         FloatingActionButton(
             onClick = { showDialog = true },
             containerColor = MaterialTheme.colorScheme.primary,
@@ -62,7 +82,7 @@ fun TaskList(viewModel: TaskViewModel) {
             Icon(Icons.Default.Add, contentDescription = "Dodaj zadanie")
         }
 
-
+        // Dialogi
         if (showDialog) {
             AddTaskDialog(
                 onDismiss = { showDialog = false },
@@ -72,7 +92,6 @@ fun TaskList(viewModel: TaskViewModel) {
                 }
             )
         }
-
 
         if (selectedTask != null) {
             TaskDetailDialog(

@@ -27,6 +27,7 @@ import java.sql.Date
 import java.util.Calendar
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTaskDialog(
     onDismiss: () -> Unit,
@@ -105,15 +106,22 @@ fun AddTaskDialog(
 
                 var categoryExpanded by remember { mutableStateOf(false) }
 
-                Box {
-                    Text(
-                        text = "Kategoria: $category",
-                        modifier = Modifier
-                            .clickable { categoryExpanded = true }
-                            .background(Color.LightGray)
-                            .padding(8.dp)
+                ExposedDropdownMenuBox(
+                    expanded = categoryExpanded,
+                    onExpandedChange = { categoryExpanded = !categoryExpanded }
+                ) {
+                    TextField(
+                        readOnly = true,
+                        value = category,
+                        onValueChange = {},
+                        label = { Text("Kategoria") },
+                        trailingIcon = {
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = categoryExpanded)
+                        },
+                        colors = ExposedDropdownMenuDefaults.textFieldColors()
                     )
-                    DropdownMenu(
+
+                    ExposedDropdownMenu(
                         expanded = categoryExpanded,
                         onDismissRequest = { categoryExpanded = false }
                     ) {
@@ -126,9 +134,7 @@ fun AddTaskDialog(
                                 }
                             )
                         }
-
                     }
-
                 }
 
                 Spacer(Modifier.height(8.dp))

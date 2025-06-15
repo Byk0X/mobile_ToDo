@@ -7,6 +7,7 @@ import com.example.mobile_todo.database.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.io.File
 
 class TaskViewModel : ViewModel() {
 
@@ -48,4 +49,20 @@ class TaskViewModel : ViewModel() {
             fetchTasks()
         }
     }
+
+    fun deleteTaskWithAttachments(context: Context, taskWithAttachments: TaskWithAttachemnts) {
+        viewModelScope.launch {
+            taskWithAttachments.attachments.forEach { attachment ->
+                val file = File(context.filesDir, "attachments/${attachment.filename}")
+                if (file.exists()) {
+                    file.delete()
+                }
+            }
+
+            taskDao.deleteTaskWithAttachments(taskWithAttachments.task)
+
+            fetchTasks()
+        }
+    }
+
 }

@@ -11,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.mobile_todo.database.Attachment
 import com.example.mobile_todo.database.Task
@@ -24,6 +25,7 @@ fun TaskList(viewModel: TaskViewModel) {
     var taskToEdit by remember { mutableStateOf<TaskWithAttachemnts?>(null) }
 
     val tasks by viewModel.tasksWithAttachments.collectAsState()
+    val context = LocalContext.current
 
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
@@ -77,7 +79,7 @@ fun TaskList(viewModel: TaskViewModel) {
                 taskWithAttachments = selectedTask!!,
                 onDismiss = { selectedTask = null },
                 onDelete = {
-                    viewModel.deleteTask(it.task)
+                    viewModel.deleteTaskWithAttachments(context, it)
                     selectedTask = null
                 },
                 onEdit = {

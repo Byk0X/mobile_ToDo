@@ -29,10 +29,13 @@ fun TaskList(viewModel: TaskViewModel) {
     val context = LocalContext.current
 
     // Filtrowanie listy na podstawie zapytania
+
     val filteredTasks = tasks.filter {
         it.task.title.contains(searchQuery, ignoreCase = true) ||
                 it.task.description.contains(searchQuery, ignoreCase = true)
-    }
+    }.sortedWith(compareBy<TaskWithAttachemnts> {
+        it.task.dueAt?.time ?: Long.MAX_VALUE
+    })
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {

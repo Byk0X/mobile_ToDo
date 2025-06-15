@@ -61,12 +61,23 @@ fun TaskList(viewModel: TaskViewModel) {
                             .fillMaxWidth()
                             .padding(vertical = 4.dp)
                             .clickable { selectedTask = task },
-                        elevation = CardDefaults.cardElevation(4.dp)
+                        elevation = CardDefaults.cardElevation(4.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = if (task.task.status) Color(0xFFE8F5E9) else MaterialTheme.colorScheme.surface
+                        )
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
-                            Text(text = task.task.title, style = MaterialTheme.typography.titleMedium)
+                            Text(
+                                text = task.task.title,
+                                style = MaterialTheme.typography.titleMedium,
+                                color = if (task.task.status) Color(0xFF4CAF50) else MaterialTheme.colorScheme.onSurface
+                            )
                             Spacer(Modifier.height(4.dp))
-                            Text(text = task.task.description, style = MaterialTheme.typography.bodyMedium)
+                            Text(
+                                text = task.task.description,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = if (task.task.status) Color(0xFF4CAF50) else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
                     }
                 }

@@ -34,7 +34,7 @@ fun TaskList(viewModel: TaskViewModel) {
     val filteredTasks = tasks
         .filter { taskWithAttachments ->
             val task = taskWithAttachments.task
-            println("Zadanie: ${task.title}, kategoria: ${task.category}, matchesCategory: ${selectedCategories.contains(task.category)}")
+            println("Zadanie: ${task.title}, kategoria: ${task.category}, matchesCategory: ${selectedCategories.contains(task.category)}, ${task.dueAt}")
             val matchesQuery = task.title.contains(searchQuery, ignoreCase = true) ||
                     task.description.contains(searchQuery, ignoreCase = true)
 

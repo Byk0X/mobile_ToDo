@@ -38,7 +38,7 @@ fun AddTaskDialog(
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     val createdAt = remember { Date(System.currentTimeMillis()) }
-    var dueAt by remember { mutableStateOf<Date?>(null) }
+    var dueAt by remember { mutableStateOf<Calendar?>(null) }
     var status by remember { mutableStateOf(false) }
     var hasNotification by remember { mutableStateOf(false) }
     var category by remember { mutableStateOf("Bez kategorii") }
@@ -58,19 +58,41 @@ fun AddTaskDialog(
 
     // Date picker
     val context = LocalContext.current
-    val calendar = Calendar.getInstance()
-    fun showDatePicker(onDateSelected: (Date) -> Unit) {
+    fun showTimePicker(calendar: Calendar, onTimeSelected: (Calendar) -> Unit) {
+        val hour = calendar.get(Calendar.HOUR_OF_DAY)
+        val minute = calendar.get(Calendar.MINUTE)
+
+        android.app.TimePickerDialog(
+            context,
+            { _, selectedHour, selectedMinute ->
+                calendar.set(Calendar.HOUR_OF_DAY, selectedHour)
+                calendar.set(Calendar.MINUTE, selectedMinute)
+                onTimeSelected(calendar)
+            },
+            hour,
+            minute,
+            true
+        ).show()
+    }
+
+    fun showDatePicker(onDateTimeSelected: (Calendar) -> Unit) {
+        val calendar = Calendar.getInstance()
         DatePickerDialog(
             context,
-            { _, year, month, day ->
-                calendar.set(year, month, day)
-                onDateSelected(Date(calendar.timeInMillis))
+            { _, year, month, dayOfMonth ->
+                calendar.set(year, month, dayOfMonth)
+                // Po wybraniu daty pokazujemy TimePicker
+                showTimePicker(calendar) { calendarWithTime ->
+                    onDateTimeSelected(calendarWithTime)
+                }
             },
             calendar.get(Calendar.YEAR),
             calendar.get(Calendar.MONTH),
             calendar.get(Calendar.DAY_OF_MONTH)
         ).show()
     }
+
+
 
 
     AlertDialog(
@@ -88,9 +110,20 @@ fun AddTaskDialog(
                 )
                 Spacer(Modifier.height(8.dp))
                 Button(onClick = {
-                    showDatePicker { selectedDate -> dueAt = selectedDate }
+                    showDatePicker { selectedDateTime ->
+                        dueAt = selectedDateTime
+                    }
                 }) {
-                    Text(dueAt?.let { "Termin: $it" } ?: "Wybierz termin wykonania")
+                    Text(
+                        dueAt?.let {
+                            val y = it.get(Calendar.YEAR)
+                            val m = it.get(Calendar.MONTH) + 1
+                            val d = it.get(Calendar.DAY_OF_MONTH)
+                            val h = it.get(Calendar.HOUR_OF_DAY)
+                            val min = it.get(Calendar.MINUTE)
+                            "Termin: $y-$m-$d $h:$min"
+                        } ?: "Wybierz termin wykonania"
+                    )
                 }
 
 
@@ -178,7 +211,7 @@ fun AddTaskDialog(
                         title = title,
                         description = description,
                         createdAt = createdAt,
-                        dueAt = dueAt,
+                        dueAt = dueAt?.time,
                         status = status,
                         hasNotification = hasNotification,
                         category = category

@@ -1,7 +1,11 @@
 package com.example.mobile_todo.composables
 
 
+import android.app.AlarmManager
 import android.app.DatePickerDialog
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -20,8 +24,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
+import canScheduleExactAlarms
 import com.example.mobile_todo.database.Attachment
 import com.example.mobile_todo.database.Task
+import com.example.mobile_todo.notifications.NotificationReceiver
+import com.example.mobile_todo.notifications.scheduleNotification
 import com.example.mobile_todo.utils.copyUriToInternalStorage
 import com.example.mobile_todo.viewmodel.TaskViewModel
 import java.sql.Date
@@ -224,8 +231,14 @@ fun AddTaskDialog(
                         }
                     }
 
-
                     onSave(newTask, attachmentEntities)
+                    if (canScheduleExactAlarms(context) && dueAt != null && hasNotification) {
+                        scheduleNotification(context, title, dueAt!!.timeInMillis)
+                        println("Ustawiono powiadomienie na: ${dueAt!!.time}")
+                    } else {
+                        println("Brak uprawnienia do ustawiania dokładnych alarmów")
+                        // Możesz wyświetlić komunikat lub przekierować do ustawień systemowych, jeśli chcesz
+                    }
                     onDismiss()
                 }
             ) {

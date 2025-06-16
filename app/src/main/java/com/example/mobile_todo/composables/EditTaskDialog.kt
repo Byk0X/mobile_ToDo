@@ -19,16 +19,21 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mobile_todo.database.Attachment
 import com.example.mobile_todo.database.Task
 import com.example.mobile_todo.database.TaskWithAttachemnts
 import com.example.mobile_todo.utils.copyUriToInternalStorage
 import com.example.mobile_todo.utils.deleteAttachmentFile
+import com.example.mobile_todo.viewmodel.TaskViewModel
 import java.sql.Date
 import java.util.*
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditTaskDialog(
+    viewModel: TaskViewModel,
     onDismiss: () -> Unit,
     onSave: (Task, List<Attachment>) -> Unit,
     existingTask: TaskWithAttachemnts?
@@ -62,7 +67,6 @@ fun EditTaskDialog(
         onResult = { uris ->
             if (uris.isNotEmpty()) {
                 uris.forEach { uri ->
-                    // Kopiujemy plik do pamięci aplikacji, funkcja powinna zwracać nazwę pliku (String)
                     val filename = copyUriToInternalStorage(context, uri)
                     filename?.let {
                         attachments.add(it)
@@ -123,19 +127,27 @@ fun EditTaskDialog(
 
                 var categoryExpanded by remember { mutableStateOf(false) }
 
-                Box {
-                    Text(
-                        text = "Kategoria: $category",
-                        modifier = Modifier
-                            .clickable { categoryExpanded = true }
-                            .background(Color.LightGray)
-                            .padding(8.dp)
+                ExposedDropdownMenuBox(
+                    expanded = categoryExpanded,
+                    onExpandedChange = { categoryExpanded = !categoryExpanded }
+                ) {
+                    TextField(
+                        modifier = Modifier.menuAnchor(),
+                        readOnly = true,
+                        value = category,
+                        onValueChange = {},
+                        label = { Text("Kategoria") },
+                        trailingIcon = {
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = categoryExpanded)
+                        },
+                        colors = ExposedDropdownMenuDefaults.textFieldColors()
                     )
-                    DropdownMenu(
+
+                    ExposedDropdownMenu(
                         expanded = categoryExpanded,
                         onDismissRequest = { categoryExpanded = false }
                     ) {
-                        listOf("Bez kategorii", "Dom", "Praca", "Inne").forEach {
+                        viewModel.categories.forEach {
                             DropdownMenuItem(
                                 text = { Text(it) },
                                 onClick = {

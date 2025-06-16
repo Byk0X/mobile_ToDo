@@ -11,6 +11,33 @@ import java.io.File
 
 class TaskViewModel : ViewModel() {
 
+    val categories = listOf("Dom", "Praca", "Szkoła", "Bez kategorii")
+
+    private val _hideCompletedTasks = MutableStateFlow(false)
+    val hideCompletedTasks: StateFlow<Boolean> = _hideCompletedTasks
+
+    fun setHideCompletedTasks(hide: Boolean) {
+        _hideCompletedTasks.value = hide
+    }
+
+
+    private val _selectedCategories = MutableStateFlow<List<String>>(categories)
+    val selectedCategories: StateFlow<List<String>> = _selectedCategories
+
+    fun toggleCategorySelection(category: String) {
+        val current = _selectedCategories.value.toMutableList()
+        if (current.contains(category)) current.remove(category) else current.add(category)
+        _selectedCategories.value = current
+    }
+
+    // Czas powiadomień w minutach
+    private val _notificationTimeBefore = MutableStateFlow(15)
+    val notificationTimeBefore: StateFlow<Int> = _notificationTimeBefore
+
+    fun setNotificationTimeBefore(minutes: Int) {
+        _notificationTimeBefore.value = minutes
+    }
+
     private lateinit var taskDao: TaskDao
 
     private val _tasksWithAttachments = MutableStateFlow<List<TaskWithAttachemnts>>(emptyList())
@@ -36,12 +63,12 @@ class TaskViewModel : ViewModel() {
         }
     }
 
-    fun deleteTask(task: Task) {
-        viewModelScope.launch {
-            taskDao.deleteTask(task)
-            fetchTasks()
-        }
-    }
+//    fun deleteTask(task: Task) {
+//        viewModelScope.launch {
+//            taskDao.deleteTask(task)
+//            fetchTasks()
+//        }
+//    }
 
     fun updateTaskWithAttachments(task: Task, attachments: List<Attachment>) {
         viewModelScope.launch {

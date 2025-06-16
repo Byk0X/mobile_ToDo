@@ -84,7 +84,7 @@ fun PhoneLayout(viewModel: TaskViewModel){
             ) { page ->
                 when (page) {
                     0 ->  TaskList(viewModel)
-                    1 ->  Settings()
+                    1 ->  Settings(viewModel, onBack = {})
 
                 }
             }

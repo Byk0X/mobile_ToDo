@@ -24,18 +24,27 @@ fun TaskList(viewModel: TaskViewModel) {
     var selectedTask by remember { mutableStateOf<TaskWithAttachemnts?>(null) }
     var taskToEdit by remember { mutableStateOf<TaskWithAttachemnts?>(null) }
     var searchQuery by remember { mutableStateOf("") }
+    val hideCompleted by viewModel.hideCompletedTasks.collectAsState()
+    val selectedCategories by viewModel.selectedCategories.collectAsState()
 
-    val tasks by viewModel.tasksWithAttachments.collectAsState()
+    val tasks by viewModel.tasksWithAttachments.collectAsState(initial = emptyList())
+
     val context = LocalContext.current
 
-    // Filtrowanie listy na podstawie zapytania
+    val filteredTasks = tasks
+        .filter { taskWithAttachments ->
+            val task = taskWithAttachments.task
+            println("Zadanie: ${task.title}, kategoria: ${task.category}, matchesCategory: ${selectedCategories.contains(task.category)}")
+            val matchesQuery = task.title.contains(searchQuery, ignoreCase = true) ||
+                    task.description.contains(searchQuery, ignoreCase = true)
 
-    val filteredTasks = tasks.filter {
-        it.task.title.contains(searchQuery, ignoreCase = true) ||
-                it.task.description.contains(searchQuery, ignoreCase = true)
-    }.sortedWith(compareBy<TaskWithAttachemnts> {
-        it.task.dueAt?.time ?: Long.MAX_VALUE
-    })
+            val matchesCompletion = if (hideCompleted) !task.status else true
+
+            val matchesCategory = selectedCategories.contains(task.category)
+
+            matchesQuery && matchesCompletion && matchesCategory
+        }
+        .sortedWith(compareBy { it.task.dueAt?.time ?: Long.MAX_VALUE })
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -99,6 +108,7 @@ fun TaskList(viewModel: TaskViewModel) {
         // Dialogi
         if (showDialog) {
             AddTaskDialog(
+                viewModel,
                 onDismiss = { showDialog = false },
                 onSave = { task: Task, attachments: List<Attachment> ->
                     viewModel.insertTaskWithAttachments(task, attachments)
@@ -124,6 +134,7 @@ fun TaskList(viewModel: TaskViewModel) {
 
         if (taskToEdit != null) {
             EditTaskDialog(
+                viewModel,
                 onDismiss = { taskToEdit = null },
                 onSave = { updatedTask: Task, updatedAttachments: List<Attachment> ->
                     viewModel.updateTaskWithAttachments(updatedTask, updatedAttachments)

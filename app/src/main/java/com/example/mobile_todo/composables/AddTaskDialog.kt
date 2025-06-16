@@ -23,6 +23,7 @@ import androidx.compose.ui.platform.LocalContext
 import com.example.mobile_todo.database.Attachment
 import com.example.mobile_todo.database.Task
 import com.example.mobile_todo.utils.copyUriToInternalStorage
+import com.example.mobile_todo.viewmodel.TaskViewModel
 import java.sql.Date
 import java.util.Calendar
 
@@ -30,6 +31,7 @@ import java.util.Calendar
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTaskDialog(
+    viewModel : TaskViewModel,
     onDismiss: () -> Unit,
     onSave: (Task, List<Attachment>) -> Unit
 ) {
@@ -91,11 +93,6 @@ fun AddTaskDialog(
                     Text(dueAt?.let { "Termin: $it" } ?: "Wybierz termin wykonania")
                 }
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Checkbox(checked = status, onCheckedChange = { status = it })
-                    Text("Zakończone")
-                }
-
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(checked = hasNotification, onCheckedChange = { hasNotification = it })
@@ -111,6 +108,7 @@ fun AddTaskDialog(
                     onExpandedChange = { categoryExpanded = !categoryExpanded }
                 ) {
                     TextField(
+                        modifier = Modifier.menuAnchor(),
                         readOnly = true,
                         value = category,
                         onValueChange = {},
@@ -125,7 +123,7 @@ fun AddTaskDialog(
                         expanded = categoryExpanded,
                         onDismissRequest = { categoryExpanded = false }
                     ) {
-                        listOf("Bez kategorii", "Dom", "Praca", "Inne").forEach {
+                        viewModel.categories.forEach {
                             DropdownMenuItem(
                                 text = { Text(it) },
                                 onClick = {

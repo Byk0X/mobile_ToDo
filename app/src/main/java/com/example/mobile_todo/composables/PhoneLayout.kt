@@ -1,42 +1,35 @@
 package com.example.mobile_todo.composables
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import com.example.mobile_todo.utils.TabItem
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.PrimaryTabRow
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
-import androidx.lifecycle.ViewModel
 import com.example.mobile_todo.viewmodel.TaskViewModel
 import kotlinx.coroutines.launch
 
+@RequiresApi(Build.VERSION_CODES.S)
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun PhoneLayout(viewModel: TaskViewModel){
+fun PhoneLayout(viewModel: TaskViewModel, taskId: Int? = null){
 
     val tabItems = listOf(
         TabItem.IconTab(Icons.Default.Home, "Lista"),
@@ -83,7 +76,7 @@ fun PhoneLayout(viewModel: TaskViewModel){
                 modifier = Modifier.fillMaxSize()
             ) { page ->
                 when (page) {
-                    0 ->  TaskList(viewModel)
+                    0 ->  TaskList(viewModel, taskId)
                     1 ->  Settings(viewModel, onBack = {})
 
                 }

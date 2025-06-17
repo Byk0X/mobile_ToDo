@@ -22,7 +22,7 @@ import com.example.mobile_todo.viewmodel.TaskViewModel
 
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
-fun TaskList(viewModel: TaskViewModel) {
+fun TaskList(viewModel: TaskViewModel, taskid: Int? = null) {
     var showDialog by remember { mutableStateOf(false) }
     var selectedTask by remember { mutableStateOf<TaskWithAttachemnts?>(null) }
     var taskToEdit by remember { mutableStateOf<TaskWithAttachemnts?>(null) }
@@ -33,6 +33,14 @@ fun TaskList(viewModel: TaskViewModel) {
     val tasks by viewModel.tasksWithAttachments.collectAsState(initial = emptyList())
 
     val context = LocalContext.current
+
+    LaunchedEffect(taskid, tasks) {
+        if (taskid != null && selectedTask == null) {
+            val task = tasks.find { it.task.id.toInt() == taskid}
+            selectedTask = task
+        }
+    }
+
 
     val filteredTasks = tasks
         .filter { taskWithAttachments ->

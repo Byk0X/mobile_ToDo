@@ -51,6 +51,11 @@ interface TaskDao {
     @Transaction
     @Query("SELECT * FROM tasks")
     suspend fun getTasksWithAttachments(): List<TaskWithAttachemnts>
+
+    @Transaction
+    @Query("SELECT * FROM tasks WHERE id = :id")
+    suspend fun getTaskById(id: Long): TaskWithAttachemnts?
+
 }
 
 

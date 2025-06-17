@@ -103,6 +103,8 @@ class TaskViewModel : ViewModel() {
         }
     }
 
-
+    suspend fun getTaskById(id: Long): TaskWithAttachemnts? {
+        return taskDao.getTaskById(id)
+    }
 
 }

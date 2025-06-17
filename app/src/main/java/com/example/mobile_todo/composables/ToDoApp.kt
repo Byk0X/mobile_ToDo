@@ -1,6 +1,8 @@
 package com.example.mobile_todo.composables
 
 import android.app.Activity
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
@@ -10,13 +12,12 @@ import com.example.mobile_todo.viewmodel.TaskViewModel
 import com.example.mobile_todo.utils.isTablet
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.LaunchedEffect
-import com.example.mobile_todo.database.TaskWithAttachemnts
-import com.example.mobile_todo.database.Task
 
 
+@RequiresApi(Build.VERSION_CODES.S)
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
-fun ToDoApp(taskId: Int) {
+fun ToDoApp(taskId: Int? = null) {
 
     val context = LocalContext.current
     val taskViewModel: TaskViewModel = viewModel()
@@ -35,7 +36,7 @@ fun ToDoApp(taskId: Int) {
     if (useTabletLayout) {
         TabletLayout()
     } else {
-        PhoneLayout(taskViewModel)
+        PhoneLayout(taskViewModel, taskId)
     }
 
 }

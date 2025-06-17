@@ -1,9 +1,13 @@
 package com.example.mobile_todo.viewmodel
 
 import android.content.Context
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import canScheduleExactAlarms
 import com.example.mobile_todo.database.*
+import com.example.mobile_todo.notifications.scheduleNotification
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -56,9 +60,16 @@ class TaskViewModel : ViewModel() {
         }
     }
 
-    fun insertTaskWithAttachments(task: Task, attachments: List<Attachment>) {
+    @RequiresApi(Build.VERSION_CODES.S)
+    fun insertTaskWithAttachments(context:Context, task: Task, attachments: List<Attachment>) {
         viewModelScope.launch {
-            taskDao.insertTaskWithAttachments(task, attachments)
+            val taskId = taskDao.insertTaskWithAttachments(task, attachments)
+            if (canScheduleExactAlarms(context) && task.dueAt != null && task.hasNotification) {
+                scheduleNotification(context, taskId.toInt(), task.title, task.dueAt.time)
+                println("Ustawiono powiadomienie na: ${task.dueAt.time}")
+            } else {
+                println("Brak uprawnienia do ustawiania dokładnych alarmów")
+            }
             fetchTasks()
         }
     }

@@ -1,5 +1,7 @@
 package com.example.mobile_todo.composables
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,6 +20,7 @@ import com.example.mobile_todo.database.Task
 import com.example.mobile_todo.database.TaskWithAttachemnts
 import com.example.mobile_todo.viewmodel.TaskViewModel
 
+@RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun TaskList(viewModel: TaskViewModel) {
     var showDialog by remember { mutableStateOf(false) }
@@ -48,7 +51,7 @@ fun TaskList(viewModel: TaskViewModel) {
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
-            // Pasek wyszukiwania
+            // Searchbar
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
@@ -105,13 +108,13 @@ fun TaskList(viewModel: TaskViewModel) {
             Icon(Icons.Default.Add, contentDescription = "Dodaj zadanie")
         }
 
-        // Dialogi
+        // Dialogs
         if (showDialog) {
             AddTaskDialog(
                 viewModel,
                 onDismiss = { showDialog = false },
                 onSave = { task: Task, attachments: List<Attachment> ->
-                    viewModel.insertTaskWithAttachments(task, attachments)
+                    viewModel.insertTaskWithAttachments(context, task, attachments)
                     showDialog = false
                 }
             )

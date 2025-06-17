@@ -7,8 +7,10 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -35,6 +37,7 @@ import java.sql.Date
 import java.util.Calendar
 
 
+@RequiresApi(Build.VERSION_CODES.S)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTaskDialog(
@@ -232,13 +235,6 @@ fun AddTaskDialog(
                     }
 
                     onSave(newTask, attachmentEntities)
-                    if (canScheduleExactAlarms(context) && dueAt != null && hasNotification) {
-                        scheduleNotification(context, title, dueAt!!.timeInMillis)
-                        println("Ustawiono powiadomienie na: ${dueAt!!.time}")
-                    } else {
-                        println("Brak uprawnienia do ustawiania dokładnych alarmów")
-                        // Możesz wyświetlić komunikat lub przekierować do ustawień systemowych, jeśli chcesz
-                    }
                     onDismiss()
                 }
             ) {

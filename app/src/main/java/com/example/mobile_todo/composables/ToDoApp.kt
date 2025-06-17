@@ -16,7 +16,7 @@ import com.example.mobile_todo.database.Task
 
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
-fun ToDoApp() {
+fun ToDoApp(taskId: Int) {
 
     val context = LocalContext.current
     val taskViewModel: TaskViewModel = viewModel()

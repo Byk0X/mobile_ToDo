@@ -41,17 +41,27 @@ class MainActivity : ComponentActivity() {
 
         createNotificationChannel(this)
         enableEdgeToEdge()
+
+        val taskId = intent?.getIntExtra("task_id", -1) ?: -1
+
         setContent {
             Mobile_ToDoTheme {
                Surface(
                    modifier = Modifier.fillMaxSize(),
                    color = MaterialTheme.colorScheme.background
                ) {
-                   ToDoApp()
+                   ToDoApp(taskId = taskId)
                }
             }
         }
     }
+
+    // 🔸 Potrzebne, jeśli aplikacja była już otwarta i użytkownik kliknie powiadomienie
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent) // aktualizujemy intent, by zadziałało ponowne otwarcie zadania
+    }
+
 
 
     fun createNotificationChannel(context: Context) {
@@ -67,5 +77,4 @@ class MainActivity : ComponentActivity() {
             notificationManager.createNotificationChannel(channel)
         }
     }
-
 }

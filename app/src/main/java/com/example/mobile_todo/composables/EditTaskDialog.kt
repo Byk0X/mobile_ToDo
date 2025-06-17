@@ -1,11 +1,10 @@
 package com.example.mobile_todo.composables
 
 import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -15,12 +14,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mobile_todo.database.Attachment
 import com.example.mobile_todo.database.Task
 import com.example.mobile_todo.database.TaskWithAttachemnts
@@ -28,6 +24,7 @@ import com.example.mobile_todo.utils.copyUriToInternalStorage
 import com.example.mobile_todo.utils.deleteAttachmentFile
 import com.example.mobile_todo.viewmodel.TaskViewModel
 import java.sql.Date
+import java.text.SimpleDateFormat
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -43,19 +40,21 @@ fun EditTaskDialog(
     var title by remember { mutableStateOf(existingTask?.task?.title ?: "") }
     var description by remember { mutableStateOf(existingTask?.task?.description ?: "") }
     val createdAt = existingTask?.task?.createdAt ?: Date(System.currentTimeMillis())
-    var dueAt by remember { mutableStateOf(existingTask?.task?.dueAt) }
+    var dueAt by remember {
+        mutableStateOf(existingTask?.task?.dueAt?.let {
+            Calendar.getInstance().apply { time = it }
+        })
+    }
     var status by remember { mutableStateOf(existingTask?.task?.status ?: false) }
     var hasNotification by remember { mutableStateOf(existingTask?.task?.hasNotification ?: false) }
     var category by remember { mutableStateOf(existingTask?.task?.category ?: "Bez kategorii") }
 
-    // attachments to lista nazw plików
     val attachments = remember {
         mutableStateListOf<String>().apply {
             existingTask?.attachments?.forEach { add(it.filename) }
         }
     }
 
-    // Pomocnicza funkcja tworząca Uri z nazwy pliku w katalogu aplikacji
     fun getAttachmentUri(filename: String): Uri {
         val file = java.io.File(context.filesDir, filename)
         return Uri.fromFile(file)
@@ -76,16 +75,31 @@ fun EditTaskDialog(
         }
     )
 
-    // Date Picker
-    val calendar = Calendar.getInstance()
-    dueAt?.let { calendar.time = it }
+    // Date & Time Picker
+    fun showTimePicker(calendar: Calendar, onTimeSelected: (Calendar) -> Unit) {
+        val hour = calendar.get(Calendar.HOUR_OF_DAY)
+        val minute = calendar.get(Calendar.MINUTE)
 
-    fun showDatePicker(onDateSelected: (Date) -> Unit) {
+        TimePickerDialog(
+            context,
+            { _, selectedHour, selectedMinute ->
+                calendar.set(Calendar.HOUR_OF_DAY, selectedHour)
+                calendar.set(Calendar.MINUTE, selectedMinute)
+                onTimeSelected(calendar)
+            },
+            hour,
+            minute,
+            true
+        ).show()
+    }
+
+    fun showDatePicker(onDateTimeSelected: (Calendar) -> Unit) {
+        val calendar = Calendar.getInstance()
         DatePickerDialog(
             context,
-            { _, year, month, day ->
-                calendar.set(year, month, day)
-                onDateSelected(Date(calendar.timeInMillis))
+            { _, year, month, dayOfMonth ->
+                calendar.set(year, month, dayOfMonth)
+                showTimePicker(calendar) { onDateTimeSelected(it) }
             },
             calendar.get(Calendar.YEAR),
             calendar.get(Calendar.MONTH),
@@ -100,6 +114,7 @@ fun EditTaskDialog(
             Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
                 TextField(value = title, onValueChange = { title = it }, label = { Text("Tytuł") })
                 Spacer(Modifier.height(8.dp))
+
                 TextField(
                     value = description,
                     onValueChange = { description = it },
@@ -107,11 +122,19 @@ fun EditTaskDialog(
                     modifier = Modifier.height(100.dp)
                 )
                 Spacer(Modifier.height(8.dp))
+
                 Button(onClick = {
-                    showDatePicker { selectedDate -> dueAt = selectedDate }
+                    showDatePicker { selected ->
+                        dueAt = selected
+                    }
                 }) {
-                    Text(dueAt?.let { "Termin: $it" } ?: "Wybierz termin wykonania")
+                    Text(dueAt?.let {
+                        val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
+                        "Termin: ${sdf.format(it.time)}"
+                    } ?: "Wybierz termin wykonania")
                 }
+
+                Spacer(Modifier.height(8.dp))
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(checked = status, onCheckedChange = { status = it })
@@ -160,9 +183,7 @@ fun EditTaskDialog(
                 }
 
                 Spacer(Modifier.height(8.dp))
-
                 Divider()
-
                 Text("Załączniki (${attachments.size}):")
 
                 attachments.forEachIndexed { index, filename ->
@@ -197,21 +218,19 @@ fun EditTaskDialog(
             Button(
                 enabled = title.isNotBlank(),
                 onClick = {
-                    val updatedTask = existingTask!!.task.copy(
+                    val updatedTask = Task(
+                        id = existingTask?.task?.id ?: 0L,
                         title = title,
                         description = description,
                         createdAt = createdAt,
-                        dueAt = dueAt,
+                        dueAt = dueAt?.time,
                         status = status,
                         hasNotification = hasNotification,
                         category = category
                     )
-
-                    // Tutaj mapujesz listę nazw plików na Attachment
-                    val attachmentEntities = attachments.map { filename ->
-                        Attachment(taskId = updatedTask.id, filename = filename)
+                    val attachmentEntities = attachments.map {
+                        Attachment(taskId = updatedTask.id, filename = it)
                     }
-
                     onSave(updatedTask, attachmentEntities)
                     onDismiss()
                 }
@@ -226,4 +245,3 @@ fun EditTaskDialog(
         }
     )
 }
-

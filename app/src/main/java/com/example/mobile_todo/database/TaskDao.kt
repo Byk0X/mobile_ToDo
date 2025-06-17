@@ -27,10 +27,11 @@ interface TaskDao {
     suspend fun deleteAttachmentsByTaskId(taskId: Long)
 
     @Transaction
-    suspend fun insertTaskWithAttachments(task: Task, attachments: List<Attachment>) {
+    suspend fun insertTaskWithAttachments(task: Task, attachments: List<Attachment>): Long {
         val taskId = insertTask(task)
         val updatedAttachments = attachments.map { it.copy(taskId = taskId) }
         insertAttachments(updatedAttachments)
+        return taskId
     }
 
     @Transaction

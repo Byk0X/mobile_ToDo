@@ -76,7 +76,7 @@ fun PhoneLayout(viewModel: TaskViewModel, taskId: Int? = null){
                 modifier = Modifier.fillMaxSize()
             ) { page ->
                 when (page) {
-                    0 ->  TaskList(viewModel, taskId)
+                    0 ->  TaskList(viewModel)
                     1 ->  Settings(viewModel, onBack = {})
 
                 }

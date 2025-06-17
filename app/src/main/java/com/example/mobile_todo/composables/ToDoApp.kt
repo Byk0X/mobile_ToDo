@@ -25,6 +25,7 @@ fun ToDoApp(taskId: Int? = null) {
     val activity = context as? Activity
     val windowSizeClass = activity?.let { calculateWindowSizeClass(it) }
 
+    taskViewModel.selectTask(taskId)
     LaunchedEffect(Unit) {
         taskViewModel.init(context)
     }
@@ -36,7 +37,7 @@ fun ToDoApp(taskId: Int? = null) {
     if (useTabletLayout) {
         TabletLayout()
     } else {
-        PhoneLayout(taskViewModel, taskId)
+        PhoneLayout(taskViewModel)
     }
 
 }

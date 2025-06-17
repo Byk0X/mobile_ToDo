@@ -24,6 +24,17 @@ class TaskViewModel : ViewModel() {
         _hideCompletedTasks.value = hide
     }
 
+    private val _selectedTaskId = MutableStateFlow<Int?>(null)
+    val selectedTaskId: StateFlow<Int?> = _selectedTaskId
+    fun selectTask(id: Int?) {
+        _selectedTaskId.value = id
+    }
+
+    fun clearSelectedTask() {
+        _selectedTaskId.value = null
+    }
+
+
 
     private val _selectedCategories = MutableStateFlow<List<String>>(categories)
     val selectedCategories: StateFlow<List<String>> = _selectedCategories
@@ -73,13 +84,6 @@ class TaskViewModel : ViewModel() {
             fetchTasks()
         }
     }
-
-//    fun deleteTask(task: Task) {
-//        viewModelScope.launch {
-//            taskDao.deleteTask(task)
-//            fetchTasks()
-//        }
-//    }
 
     fun updateTaskWithAttachments(task: Task, attachments: List<Attachment>) {
         viewModelScope.launch {

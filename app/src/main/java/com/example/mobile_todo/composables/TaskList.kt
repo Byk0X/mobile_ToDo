@@ -22,7 +22,7 @@ import com.example.mobile_todo.viewmodel.TaskViewModel
 
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
-fun TaskList(viewModel: TaskViewModel, taskid: Int? = null) {
+fun TaskList(viewModel: TaskViewModel) {
     var showDialog by remember { mutableStateOf(false) }
     var selectedTask by remember { mutableStateOf<TaskWithAttachemnts?>(null) }
     var taskToEdit by remember { mutableStateOf<TaskWithAttachemnts?>(null) }
@@ -33,11 +33,15 @@ fun TaskList(viewModel: TaskViewModel, taskid: Int? = null) {
     val tasks by viewModel.tasksWithAttachments.collectAsState(initial = emptyList())
 
     val context = LocalContext.current
+    val taskId by viewModel.selectedTaskId.collectAsState()
 
-    LaunchedEffect(taskid, tasks) {
-        if (taskid != null && selectedTask == null) {
-            val task = tasks.find { it.task.id.toInt() == taskid}
-            selectedTask = task
+    LaunchedEffect(taskId, tasks) {
+        if (taskId != null && taskId != -1 && selectedTask == null) {
+            val task = tasks.find { it.task.id.toInt() == taskId}
+            if(task != null){
+                selectedTask = task
+                viewModel.clearSelectedTask()
+            }
         }
     }
 
@@ -131,9 +135,11 @@ fun TaskList(viewModel: TaskViewModel, taskid: Int? = null) {
         if (selectedTask != null) {
             TaskDetailDialog(
                 taskWithAttachments = selectedTask!!,
-                onDismiss = { selectedTask = null },
+                onDismiss = { selectedTask = null
+                    viewModel.clearSelectedTask()},
                 onDelete = {
                     viewModel.deleteTaskWithAttachments(context, it)
+                    viewModel.clearSelectedTask()
                     selectedTask = null
                 },
                 onEdit = {

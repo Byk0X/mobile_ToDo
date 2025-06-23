@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,6 +20,8 @@ import com.example.mobile_todo.database.Attachment
 import com.example.mobile_todo.database.Task
 import com.example.mobile_todo.database.TaskWithAttachemnts
 import com.example.mobile_todo.viewmodel.TaskViewModel
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
@@ -91,18 +94,44 @@ fun TaskList(viewModel: TaskViewModel) {
                         )
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
-                            Text(
-                                text = task.task.title,
-                                style = MaterialTheme.typography.titleMedium,
-                                color = if (task.task.status) Color(0xFF4CAF50) else MaterialTheme.colorScheme.onSurface
-                            )
+                            Row(verticalAlignment = Alignment.CenterVertically){
+                                Text(
+                                    text = task.task.title,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = if (task.task.status) Color(0xFF4CAF50) else MaterialTheme.colorScheme.onSurface
+                                )
+                                if(task.attachments.isNotEmpty()){
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Icon(
+                                        imageVector = Icons.Default.List,
+                                        contentDescription = "Załączniki",
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                            }
                             Spacer(Modifier.height(4.dp))
                             Text(
                                 text = task.task.description,
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = if (task.task.status) Color(0xFF4CAF50) else MaterialTheme.colorScheme.onSurfaceVariant
                             )
+
+                            val dueDate = task.task.dueAt
+                            if(dueDate != null){
+                                val formattedDate = remember(dueDate){
+                                    SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault() ).format(dueDate)
+                                }
+                                Text(
+                                    text = "Termin: $formattedDate",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = if (task.task.status) Color(0xFF4CAF50) else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+
                         }
+
+
                     }
                 }
             }

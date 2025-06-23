@@ -67,7 +67,6 @@ fun Settings(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Czas powiadomień przed wykonaniem
         Text("Czas powiadomień (minuty przed):", style = MaterialTheme.typography.titleMedium)
         Slider(
             value = notificationTimeBefore.toFloat(),

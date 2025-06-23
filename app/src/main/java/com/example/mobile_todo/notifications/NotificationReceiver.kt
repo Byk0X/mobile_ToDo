@@ -41,7 +41,7 @@ class NotificationReceiver : BroadcastReceiver() {
 
         val notificationManager = NotificationManagerCompat.from(context)
 
-        // SPRAWDZENIE UPRWANIENIA (wymagane od Androida 13 / API 33)
+        // SPRAWDZENIE UPRWANIENIA
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
             ContextCompat.checkSelfPermission(
                 context,

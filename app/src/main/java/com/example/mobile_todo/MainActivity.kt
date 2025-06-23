@@ -58,14 +58,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    // 🔸 Potrzebne, jeśli aplikacja była już otwarta i użytkownik kliknie powiadomienie
-    override fun onNewIntent(intent: Intent) {
-        super.onNewIntent(intent)
-        setIntent(intent) // aktualizujemy intent, by zadziałało ponowne otwarcie zadania
-    }
-
-
-
     fun createNotificationChannel(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val name = "task_channel"

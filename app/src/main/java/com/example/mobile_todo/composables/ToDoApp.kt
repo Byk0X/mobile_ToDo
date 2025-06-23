@@ -35,7 +35,7 @@ fun ToDoApp(taskId: Int? = null) {
                     windowSizeClass?.widthSizeClass == WindowWidthSizeClass.Medium)
 
     if (useTabletLayout) {
-        TabletLayout()
+        TabletLayout(taskViewModel)
     } else {
         PhoneLayout(taskViewModel)
     }
